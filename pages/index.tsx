@@ -4,7 +4,7 @@ import { useState, useMemo } from "react";
 
 interface Pokemon {
   id: number;
-  name: string;
+  title: string;
   image: string;
 }
 
