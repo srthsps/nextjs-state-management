@@ -1,6 +1,7 @@
 import Head from "next/head";
 import styles from "../styles/Home.module.css";
 import { useState, useMemo } from "react";
+import { useQuery } from "react-query";
 
 interface Pokemon {
   id: number;
@@ -8,24 +9,29 @@ interface Pokemon {
   image: string;
 }
 
+const getPokemon = (): Promise<Pokemon[]> =>
+  fetch("https://ghibliapi.herokuapp.com/films").then((resp) => resp.json());
+
 export async function getServerSideProps() {
-  const resp = await fetch(
-    "https://ghibliapi.herokuapp.com/films"
-  );
   return {
     props: {
-      pokemon: await resp.json(),
+      initialPokemon: await getPokemon()
     },
   };
 }
 
-export default function Home({ pokemon }: { pokemon: Pokemon[] }) {
+export default function Home({ initialPokemon }: { initialPokemon: Pokemon[] }) {
+
+  const {data:pokemon} = useQuery("pokemon",getPokemon,{initialData:initialPokemon})
+
   const [filter, setFilter] = useState("");
 
-  const filteredPokemon = useMemo(()=>{
-    let result = pokemon.filter(item=>item.title.toLowerCase().includes(filter.toLowerCase()))
-    return result
-  },[pokemon,filter])
+  const filteredPokemon = useMemo(() => {
+    let result = initialPokemon.filter((item) =>
+      item.title.toLowerCase().includes(filter.toLowerCase())
+    );
+    return result;
+  }, [initialPokemon, filter]);
 
   return (
     <div className={styles.main}>
@@ -43,15 +49,12 @@ export default function Home({ pokemon }: { pokemon: Pokemon[] }) {
         />
       </div>
       <div className={styles.container}>
-      {filteredPokemon.slice(0, 20).map((p) => (
-        <div key={p.id} className={styles.image}>
-          <img
-            alt={p.title}
-            src={p.image}
-          />
-          <h2>{p.title}</h2>
-        </div>
-      ))}
+        {filteredPokemon.slice(0, 20).map((p) => (
+          <div key={p.id} className={styles.image}>
+            <img alt={p.title} src={p.image} />
+            <h2>{p.title}</h2>
+          </div>
+        ))}
       </div>
     </div>
   );
