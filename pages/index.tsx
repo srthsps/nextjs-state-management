@@ -1,31 +1,14 @@
 import Head from "next/head";
 import styles from "../styles/Home.module.css";
 import { useState, useMemo } from "react";
+import {usePokemon} from "../src/store"
 
-interface Pokemon {
-  id: number;
-  title: string;
-  image: string;
-}
+export {getServerSideProps} from "../src/store"
 
-export async function getServerSideProps() {
-  const resp = await fetch(
-    "https://ghibliapi.herokuapp.com/films"
-  );
-  return {
-    props: {
-      pokemon: await resp.json(),
-    },
-  };
-}
 
-export default function Home({ pokemon }: { pokemon: Pokemon[] }) {
-  const [filter, setFilter] = useState("");
+export default function Home() {
 
-  const filteredPokemon = useMemo(()=>{
-    let result = pokemon.filter(item=>item.title.toLowerCase().includes(filter.toLowerCase()))
-    return result
-  },[pokemon,filter])
+  const {pokemon,filter,setFilter} = usePokemon()
 
   return (
     <div className={styles.main}>
@@ -43,7 +26,7 @@ export default function Home({ pokemon }: { pokemon: Pokemon[] }) {
         />
       </div>
       <div className={styles.container}>
-      {filteredPokemon.slice(0, 20).map((p) => (
+      {pokemon.slice(0, 20).map((p) => (
         <div key={p.id} className={styles.image}>
           <img
             alt={p.title}
